@@ -100,7 +100,7 @@ val_dataloader = DataLoader(
 )
 
 
-def sampleImages(batches_done, train_real, train_fake):
+def sampleImages(epoch, train_real, train_fake):
     """Saves a generated sample from the validation set"""
     batch = next(iter(val_dataloader))
 
@@ -114,8 +114,8 @@ def sampleImages(batches_done, train_real, train_fake):
     img_sample_test = torch.cat((test_fake.data, us_image.data), -2)
     img_sample_train = torch.cat((train_fake.data,train_real.data), -2)
 
-    save_image(img_sample_test, os.path.join(imagedir, f"/test_{batches_done}.png"), nrow=5, normalize=True)
-    save_image(img_sample_train, os.path.join(imagedir, f"/train_{batches_done}.png"), nrow=5, normalize=True)
+    save_image(img_sample_test, os.path.join(imagedir, f"test_{epoch}.png"), nrow=5, normalize=True)
+    save_image(img_sample_train, os.path.join(imagedir, f"train_{epoch}.png"), nrow=5, normalize=True)
 
 # Calculate output of image discriminator (PatchGAN)
 patch = (1, opt.img_size // 2 ** 4, opt.img_size // 2 ** 4)
@@ -123,8 +123,11 @@ patch = (1, opt.img_size // 2 ** 4, opt.img_size // 2 ** 4)
 lambda_pixel = 100
 ae_weight = 10
 
+loss_record = 9999
+prev_time = time.time()
 for epoch in range(opt.n_epochs):
 
+    loss = 0
     for i, batch in enumerate(dataloader):
 
         # Model inputs
@@ -211,8 +214,22 @@ for epoch in range(opt.n_epochs):
             
             logger.info(train_info)
 
-        if batches_done % opt.sample_interval == 0:
-            sampleImages(batches_done, us_image, fake_imgs)
+        loss += loss_D.item()
+
+    sampleImages(epoch, us_image, fake_imgs)
+
+    loss = loss / len(dataloader)
+
+    if loss < loss_record:
+        logger.info(f'save model at epoch {epoch}, best loss: {loss_record}, current loss: {loss}')
+        torch.save(autoencoder.state_dict(), os.path.join(modeldir, 'autoencoder.pth'))
+        torch.save(generator.state_dict(), os.path.join(modeldir, 'generator.pth'))
+        torch.save(discriminator.state_dict(), os.path.join(modeldir, 'discriminator.pth'))
+        loss_record = loss
+
+
+
+
 
 
 
