@@ -222,11 +222,15 @@ for epoch in range(opt.n_epochs):
 
     if loss < loss_record:
         logger.info(f'save model at epoch {epoch}, best loss: {loss_record}, current loss: {loss}')
-        torch.save(autoencoder.state_dict(), os.path.join(modeldir, 'autoencoder.pth'))
+        torch.save(autoencoder.state_dict(), os.path.join(modeldir, 'autoencoders.pth'))
         torch.save(generator.state_dict(), os.path.join(modeldir, 'generator.pth'))
         torch.save(discriminator.state_dict(), os.path.join(modeldir, 'discriminator.pth'))
         loss_record = loss
 
+    if (epoch % opt.checkpoint_interval == 0) and (epoch > 200):
+        torch.save(autoencoder.state_dict(), os.path.join(modeldir, f'autoencoders_epoch{epoch}.pth'))
+        torch.save(generator.state_dict(), os.path.join(modeldir, f'generator_epoch{epoch}.pth'))
+        torch.save(discriminator.state_dict(), os.path.join(modeldir, f'discriminator_epoch{epoch}.pth'))
 
 
 
