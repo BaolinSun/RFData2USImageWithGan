@@ -1,7 +1,7 @@
 epoch: 0                          # epoch to start training from
 n_epochs: 1000                    # number of epochs of training
 dataset_name: "picmus"
-batch_size: 1
+batch_size: 4
 lr: 0.0001
 b1: 0.5                           # adam: decay of first order momentum of gradient
 b2: 0.999                         # adam: decay of first order momentum of gradient
